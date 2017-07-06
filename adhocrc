@@ -35,6 +35,7 @@ adhocsh_pin () {
 }
 # Pin first level command
 adhocsh_pin $ADHOCSH_COMMAND
+adhocsh_pin column
 unset -f adhocsh_pin
 
 export HISTFILE="$ADHOCSH_DATA/$ADHOCSH_COMMAND.history"
@@ -44,6 +45,32 @@ export HISTCONTROL='erasedups'
 shopt -u mailwarn
 
 PATH=$ADHOCSH_ENV_PATH source "$ADHOCSH_COMPLETION"
+
+_complete0 () {
+	# TODO Wait for 2nd <Tab> to show possible commands (?)
+
+	local line=( $READLINE_LINE )
+	local curr=${line[0]}
+
+	local cmds=( $(compgen -W "${ADHOCSH_SUBCOMMANDS[*]}" -- "$curr") )
+
+	if [ ${#cmds[@]} -eq 1 ]; then
+		printf -v READLINE_LINE "%s " "${cmds[0]}"
+		READLINE_POINT=${#READLINE_LINE}
+		# Rebind normal completion (note, that this
+		# prevent subsequent command completions)
+		bind '"\t": complete'
+	else
+		echo "$PS1$READLINE_LINE"
+		for cmd in "${cmds[@]}"; do
+			echo "$cmd"
+		done | column
+		# TODO Compute common prefix and adjust READLINE_LINE and _POINT
+	fi
+}
+bind -x '"\t": _complete0'
+# Rebind command completion
+PROMPT_COMMAND="bind -x '\"\\t\": _complete0'"
 
 eval "_adhocsh_$ADHOCSH_COMMAND () {
 	COMP_WORDS=( $ADHOCSH_COMMAND \"\${COMP_WORDS[@]}\" )
@@ -67,6 +94,4 @@ echo "Hit Ctrl-D to leave!"
 unset PATH
 # command_not_found_handle will not be called since PATH is unset
 unset -f command_not_found_handle
-# Only complete desired 2nd level commands
-complete -E -W "${ADHOCSH_SUBCOMMANDS[*]}"
 
