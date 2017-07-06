@@ -52,6 +52,11 @@ _complete0 () {
 	local line=( $READLINE_LINE )
 	local curr=${line[0]}
 
+	if [ ${#line[@]} -gt 1 ]; then
+		bind '"\t": complete'
+		return
+	fi
+
 	local cmds=( $(compgen -W "${ADHOCSH_SUBCOMMANDS[*]}" -- "$curr") )
 
 	if [ ${#cmds[@]} -eq 1 ]; then
