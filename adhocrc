@@ -3,7 +3,6 @@
 BASH_COMPLETION_DIR=/usr/share/bash-completion/completions
 
 ADHOCSH_DATA="${XDG_DATA_HOME:-$HOME/.local/share}/adhocsh"
-ADHOCSH_CACHE="${XDG_CACHE_HOME:-$HOME/.cache}/adhocsh"
 
 if [ -z "$ADHOCSH_COMMAND" -o -z "$ADHOCSH_SUBCOMMANDS" ]; then
 	echo "Ad-hoc shell command and/or subcommands not specified!" >&2
@@ -34,28 +33,9 @@ adhocsh_pin () {
 	eval "$(printf '%s () { PATH="%s" "%s" "$@"; }' \
 			"$1" "$ADHOCSH_ENV_PATH" "$(which "$1")")"
 }
-adhocsh_pin ln
-adhocsh_pin which
+# Pin first level command
 adhocsh_pin $ADHOCSH_COMMAND
 unset -f adhocsh_pin
-
-ADHOCSH_RUNTIME="$ADHOCSH_CACHE/$ADHOCSH_COMMAND"
-mkdir -p "$ADHOCSH_RUNTIME"
-
-# Bend environment to exclude all commands. Note, unsetting the
-# PATH variable prevents command_not_found_handle to be called.
-PATH=$ADHOCSH_RUNTIME
-
-CMDNOTFOUND=false # Prevent infinite recursion
-command_not_found_handle () {
-#	echo "Missing command $1."
-	"$CMDNOTFOUND" && return 127
-
-	local cmd=$(CMDNOTFOUND=true which "$1")
-	ln -sf "$cmd" "$ADHOCSH_RUNTIME/$1"
-
-	CMDNOTFOUND=true "$@"
-}
 
 export HISTFILE="$ADHOCSH_DATA/$ADHOCSH_COMMAND.history"
 export HISTCONTROL='erasedups'
@@ -63,7 +43,7 @@ export HISTCONTROL='erasedups'
 # Disable mail checks
 shopt -u mailwarn
 
-source "$ADHOCSH_COMPLETION"
+PATH=$ADHOCSH_ENV_PATH source "$ADHOCSH_COMPLETION"
 
 for subcmd in "${ADHOCSH_SUBCOMMANDS[@]}"; do
 	# Note, shell keywords like done (taskwarrior) might be aliased
@@ -72,7 +52,7 @@ for subcmd in "${ADHOCSH_SUBCOMMANDS[@]}"; do
 	eval "_${ADHOCSH_COMMAND}_$subcmd () {
 		COMP_WORDS=( $ADHOCSH_COMMAND \"\${COMP_WORDS[@]}\" )
 		COMP_CWORD=\$((COMP_CWORD+1))
-		$ADHOCSH_COMPLETION_FUNCNAME
+		PATH='$ADHOCSH_ENV_PATH' $ADHOCSH_COMPLETION_FUNCNAME
 	}"
 	complete -o nospace -F "_${ADHOCSH_COMMAND}_$subcmd" "$subcmd"
 done
@@ -80,4 +60,11 @@ unset subcmd
 
 echo "Ad-hoc shell for $ADHOCSH_COMMAND."
 echo "Hit Ctrl-D to leave!"
+
+# Bend shell environment last
+
+# Exclude all undesired commands
+unset PATH
+# command_not_found_handle will not be called since PATH is unset
+unset -f command_not_found_handle
 
