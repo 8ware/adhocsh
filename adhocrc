@@ -45,16 +45,16 @@ shopt -u mailwarn
 
 PATH=$ADHOCSH_ENV_PATH source "$ADHOCSH_COMPLETION"
 
+eval "_adhocsh_$ADHOCSH_COMMAND () {
+	COMP_WORDS=( $ADHOCSH_COMMAND \"\${COMP_WORDS[@]}\" )
+	COMP_CWORD=\$((COMP_CWORD+1))
+	PATH='$ADHOCSH_ENV_PATH' $ADHOCSH_COMPLETION_FUNCNAME
+}"
+
 for subcmd in "${ADHOCSH_SUBCOMMANDS[@]}"; do
 	# Note, shell keywords like done (taskwarrior) might be aliased
 	alias $subcmd="${ADHOCSH_COMMAND} $subcmd"
-
-	eval "_${ADHOCSH_COMMAND}_$subcmd () {
-		COMP_WORDS=( $ADHOCSH_COMMAND \"\${COMP_WORDS[@]}\" )
-		COMP_CWORD=\$((COMP_CWORD+1))
-		PATH='$ADHOCSH_ENV_PATH' $ADHOCSH_COMPLETION_FUNCNAME
-	}"
-	complete -o nospace -F "_${ADHOCSH_COMMAND}_$subcmd" "$subcmd"
+	complete -o nospace -F "_adhocsh_$ADHOCSH_COMMAND" "$subcmd"
 done
 unset subcmd
 
