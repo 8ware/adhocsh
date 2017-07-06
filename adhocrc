@@ -30,10 +30,14 @@ PS1="$ADHOCSH_COMMAND> "
 ADHOCSH_ENV_PATH=$PATH
 
 # Grab minimal required environment
-LN=$(which ln)
-ln () { "$LN" "$@"; }
-WHICH=$(which which)
-which () { PATH=$ADHOCSH_ENV_PATH "$WHICH" "$@"; }
+adhocsh_pin () {
+	eval "$(printf '%s () { PATH="%s" "%s" "$@"; }' \
+			"$1" "$ADHOCSH_ENV_PATH" "$(which "$1")")"
+}
+adhocsh_pin ln
+adhocsh_pin which
+adhocsh_pin $ADHOCSH_COMMAND
+unset -f adhocsh_pin
 
 ADHOCSH_RUNTIME="$ADHOCSH_CACHE/$ADHOCSH_COMMAND"
 mkdir -p "$ADHOCSH_RUNTIME"
@@ -41,10 +45,6 @@ mkdir -p "$ADHOCSH_RUNTIME"
 # Bend environment to exclude all commands. Note, unsetting the
 # PATH variable prevents command_not_found_handle to be called.
 PATH=$ADHOCSH_RUNTIME
-
-eval "$ADHOCSH_COMMAND () {
-	PATH=\"$ADHOCSH_ENV_PATH\" '$(which $ADHOCSH_COMMAND)' \"\$@\"
-}"
 
 CMDNOTFOUND=false # Prevent infinite recursion
 command_not_found_handle () {
