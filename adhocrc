@@ -67,4 +67,6 @@ echo "Hit Ctrl-D to leave!"
 unset PATH
 # command_not_found_handle will not be called since PATH is unset
 unset -f command_not_found_handle
+# Only complete desired 2nd level commands
+complete -E -W "${ADHOCSH_SUBCOMMANDS[*]}"
 
