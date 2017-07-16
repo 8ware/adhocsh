@@ -6,13 +6,16 @@ import sys
 import readline
 from os import environ
 from subprocess import call, check_output
+from optparse import OptionParser
 
 
 class AdHocShell(object):
 
-    def __init__(self, command, completion):
+    def __init__(self, command, completion, compfunc=None, default=None):
         self.command = command
         self.completion = completion
+        self.completion_funcname = compfunc if compfunc else '_' + command
+        self.default_subcommand = default
 
     def get_prompt(self):
         return self.command + '> '
@@ -61,7 +64,7 @@ class AdHocShell(object):
         script = ('source "{}"; COMP_WORDS=( "{}" "{}" ) COMP_CWORD={}; {};'
                 + ' for match in "${{COMPREPLY[@]}}"; do echo "$match"; done'
 				).format(self.completion, self.command, '" "'.join(args), cword,
-                '_'+self.command)
+                self.completion_funcname)
 
         with open('/dev/null', 'w') as devnull:
             # Redirect STDERR to /dev/null since compopt complains to be not
@@ -73,10 +76,15 @@ class AdHocShell(object):
         return matches
 
 
-command = sys.argv[1]
-completion = sys.argv[2]
+parser = OptionParser()
+parser.add_option('-d', '--default', action='store', dest='default', default=None)
+parser.add_option('-f', '--compfunc', action='store', dest='compfunc', default=None)
+opts, args = parser.parse_args()
 
-shell = AdHocShell(command, completion)
+command = args[0]
+completion = args[1]
+
+shell = AdHocShell(command, completion, compfunc=opts.compfunc, default=opts.default)
 readline.set_completer_delims(' \t\n;')
 readline.set_completer(shell.complete)
 readline.parse_and_bind('tab: complete')
@@ -89,6 +97,8 @@ while True:
     try:
         line = raw_input(shell.get_prompt())
         args = line.split()
+        if not len (args) and shell.default_subcommand:
+            args = [ shell.default_subcommand ]
         full_command = [ shell.command ]
         full_command.extend(args)
         call(full_command)
