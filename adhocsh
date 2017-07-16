@@ -1,0 +1,100 @@
+#! /usr/bin/env python
+
+from __future__ import print_function
+
+import sys
+import readline
+from os import environ
+from subprocess import call, check_output
+
+
+class AdHocShell(object):
+
+    def __init__(self, command, completion):
+        self.command = command
+        self.completion = completion
+
+    def get_prompt(self):
+        return self.command + '> '
+
+    def complete(self, text, state):
+        line = readline.get_line_buffer()
+        args = line.split()
+        if state == 0:  # On first trigger, build possible matches
+            cword = len (args)
+            cword += 0 if len (text) else 1
+            self.matches = self.get_bash_completion(args, cword)
+
+        # Return match indexed by state
+        try:
+            match = self.matches[state]
+            if len (self.matches) == 1 and len (match) and match[-1:] != ' ':
+                match += ' '
+            return match
+        except IndexError:
+            return None
+
+    def display_matches(self, substitution, matches, longest_match_length):
+        line_buffer = readline.get_line_buffer()
+        columns = environ.get("COLUMNS", 80)
+
+        print ()
+
+        tpl = "{:<" + str(int(max(map(len, matches)) * 1.2)) + "}"
+
+        buffer = ""
+        for match in matches:
+            match = tpl.format(match)
+            if len(buffer + match) > columns:
+                print(buffer)
+                buffer = ""
+            buffer += match
+
+        if buffer:
+            print(buffer)
+
+        print(self.get_prompt(), end="")
+        print(line_buffer, end="")
+        sys.stdout.flush()
+
+    def get_bash_completion(self, args, cword):
+        script = ('source "{}"; COMP_WORDS=( "{}" "{}" ) COMP_CWORD={}; {};'
+                + ' for match in "${{COMPREPLY[@]}}"; do echo "$match"; done'
+				).format(self.completion, self.command, '" "'.join(args), cword,
+                '_'+self.command)
+
+        with open('/dev/null', 'w') as devnull:
+            # Redirect STDERR to /dev/null since compopt complains to be not
+            # in completion mode currently
+            output = check_output([ 'bash', '-c', script ], stderr=devnull)
+
+        matches = filter (None, output[:-1].split("\n"))
+
+        return matches
+
+
+command = sys.argv[1]
+completion = sys.argv[2]
+
+shell = AdHocShell(command, completion)
+readline.set_completer_delims(' \t\n;')
+readline.set_completer(shell.complete)
+readline.parse_and_bind('tab: complete')
+readline.set_completion_display_matches_hook(shell.display_matches)
+
+print ("Ad-hoc shell for {}.".format(command))
+print ("Hit Ctrl-D to leave!")
+
+while True:
+    try:
+        line = raw_input(shell.get_prompt())
+        args = line.split()
+        full_command = [ shell.command ]
+        full_command.extend(args)
+        call(full_command)
+    except KeyboardInterrupt:
+        print ('^C')
+    except EOFError:
+        print()
+        break
+
