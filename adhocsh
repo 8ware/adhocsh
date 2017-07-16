@@ -7,6 +7,7 @@ import readline
 from os import environ, path
 from subprocess import call, check_output
 from optparse import OptionParser
+import shlex
 
 
 BASH_COMPLETION_DIR = '/usr/share/bash-completion/completions'
@@ -103,10 +104,11 @@ print ("Hit Ctrl-D to leave!")
 while True:
     try:
         line = raw_input(shell.get_prompt())
-        args = line.split()
-        if not len (args) and not opts.allow_default:
+        args = shlex.split(line)
+        argc = len (args)
+        if not argc and not opts.allow_default:
             continue
-        if not len (args) and shell.default_subcommand:
+        if not argc and shell.default_subcommand:
             args = [ shell.default_subcommand ]
         full_command = [ shell.command ]
         full_command.extend(args)
