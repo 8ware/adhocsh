@@ -25,7 +25,9 @@ class AdHocShell(object):
         args = line.split()
         if state == 0:  # On first trigger, build possible matches
             cword = len (args)
-            cword += 0 if len (text) else 1
+            # Try to complete next word (+1) if text is empty and separated
+            # from the previous word by a whitespace
+            cword += 0 if len (text) or len (line) and line[-1:] != ' ' else 1
             self.matches = self.get_bash_completion(args, cword)
 
         # Return match indexed by state
@@ -86,7 +88,7 @@ command = args[0]
 completion = args[1]
 
 shell = AdHocShell(command, completion, compfunc=opts.compfunc, default=opts.default)
-readline.set_completer_delims(' \t\n;')
+readline.set_completer_delims(' \t\n;:')
 readline.set_completer(shell.complete)
 readline.parse_and_bind('tab: complete')
 readline.set_completion_display_matches_hook(shell.display_matches)
