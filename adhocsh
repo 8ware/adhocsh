@@ -79,6 +79,7 @@ class AdHocShell(object):
 parser = OptionParser()
 parser.add_option('-d', '--default', action='store', dest='default', default=None)
 parser.add_option('-f', '--compfunc', action='store', dest='compfunc', default=None)
+parser.add_option('-D', '--no-default', action='store_false', dest='allow_default', default=True)
 opts, args = parser.parse_args()
 
 command = args[0]
@@ -97,6 +98,8 @@ while True:
     try:
         line = raw_input(shell.get_prompt())
         args = line.split()
+        if not len (args) and not opts.allow_default:
+            continue
         if not len (args) and shell.default_subcommand:
             args = [ shell.default_subcommand ]
         full_command = [ shell.command ]
