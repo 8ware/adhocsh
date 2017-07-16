@@ -4,9 +4,12 @@ from __future__ import print_function
 
 import sys
 import readline
-from os import environ
+from os import environ, path
 from subprocess import call, check_output
 from optparse import OptionParser
+
+
+BASH_COMPLETION_DIR = '/usr/share/bash-completion/completions'
 
 
 class AdHocShell(object):
@@ -82,10 +85,11 @@ parser = OptionParser()
 parser.add_option('-d', '--default', action='store', dest='default', default=None)
 parser.add_option('-f', '--compfunc', action='store', dest='compfunc', default=None)
 parser.add_option('-D', '--no-default', action='store_false', dest='allow_default', default=True)
+parser.add_option('-c', '--completion', action='store', dest='completion')
 opts, args = parser.parse_args()
 
 command = args[0]
-completion = args[1]
+completion = opts.completion if opts.completion else path.join(BASH_COMPLETION_DIR, command)
 
 shell = AdHocShell(command, completion, compfunc=opts.compfunc, default=opts.default)
 readline.set_completer_delims(' \t\n;:')
