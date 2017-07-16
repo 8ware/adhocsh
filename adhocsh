@@ -36,7 +36,7 @@ class AdHocShell(object):
 
     def display_matches(self, substitution, matches, longest_match_length):
         line_buffer = readline.get_line_buffer()
-        columns = environ.get("COLUMNS", 80)
+        columns = int (environ.get("COLUMNS", 80))
 
         print ()
 
@@ -46,12 +46,12 @@ class AdHocShell(object):
         for match in matches:
             match = tpl.format(match)
             if len(buffer + match) > columns:
-                print(buffer)
+                print(buffer.strip())
                 buffer = ""
             buffer += match
 
         if buffer:
-            print(buffer)
+            print(buffer.strip())
 
         print(self.get_prompt(), end="")
         print(line_buffer, end="")
