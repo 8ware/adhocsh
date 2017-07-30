@@ -4,7 +4,7 @@ from __future__ import print_function
 
 import sys
 import readline
-from os import environ, path
+from os import environ, path, listdir
 from subprocess import call, check_output
 from optparse import OptionParser
 import shlex
@@ -51,6 +51,9 @@ class AdHocShell(object):
             # from the previous word by a whitespace
             cword += 0 if len (text) or len (line) and line[-1:] != ' ' else 1
             self.matches = self.get_bash_completion(args, cword)
+
+            if not len (self.matches):
+                self.matches = self.get_file_completion(text)
 
         # Return match indexed by state
         try:
@@ -100,6 +103,17 @@ class AdHocShell(object):
         matches = filter (None, output[:-1].split("\n"))
 
         return matches
+
+    def get_file_completion(self, prefix):
+        curdir = path.dirname(prefix) or '.'
+        curfil = path.basename(prefix)
+        filenames = []
+        for entry in listdir(curdir):
+            if entry.startswith(curfil):
+                if (path.isdir(entry)):
+                    entry += '/'
+                filenames.append(entry)
+        return filenames
 
 
 parser = OptionParser()
