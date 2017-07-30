@@ -8,6 +8,7 @@ from os import environ, path
 from subprocess import call, check_output
 from optparse import OptionParser
 import shlex
+import re
 
 
 BASH_COMPLETION_DIR = '/usr/share/bash-completion/completions'
@@ -54,7 +55,9 @@ class AdHocShell(object):
         # Return match indexed by state
         try:
             match = self.matches[state]
-            if len (self.matches) == 1 and len (match) and match[-1:] != ' ':
+            # Word Boundary Pattern
+            wbp = re.compile('[ :=/]$') # See COMP_WORDBREAKS (git adds ':')
+            if len (self.matches) == 1 and match and not wbp.search(match):
                 match += ' '
             return match
         except IndexError:
@@ -110,7 +113,7 @@ command = args[0]
 completion = opts.completion if opts.completion else path.join(BASH_COMPLETION_DIR, command)
 
 shell = AdHocShell(command, completion, compfunc=opts.compfunc, default=opts.default)
-readline.set_completer_delims(' \t\n;:')
+readline.set_completer_delims(' \t\n;:=')
 readline.set_completer(shell.complete)
 readline.parse_and_bind('tab: complete')
 readline.set_completion_display_matches_hook(shell.display_matches)
