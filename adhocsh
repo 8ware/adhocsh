@@ -12,6 +12,23 @@ import shlex
 
 BASH_COMPLETION_DIR = '/usr/share/bash-completion/completions'
 
+BASH_COMPLETION_SCRIPT_TEMPLATE = """
+        # Source bash completion
+        source "{completion_file:s}"
+
+        # Prepare completion environment
+        COMP_WORDS=( "{command:s}" "{quoted_args:s}" )
+        COMP_CWORD={cword:d}
+
+        # Execute completion
+        {completion_function}
+
+        # Print (return) completion results
+        for match in "${{COMPREPLY[@]}}"; do
+            echo "$match"
+        done
+"""
+
 
 class AdHocShell(object):
 
@@ -67,10 +84,10 @@ class AdHocShell(object):
         sys.stdout.flush()
 
     def get_bash_completion(self, args, cword):
-        script = ('source "{}"; COMP_WORDS=( "{}" "{}" ) COMP_CWORD={}; {};'
-                + ' for match in "${{COMPREPLY[@]}}"; do echo "$match"; done'
-				).format(self.completion, self.command, '" "'.join(args), cword,
-                self.completion_funcname)
+        script = BASH_COMPLETION_SCRIPT_TEMPLATE.format(
+                completion_file = self.completion,
+                command = self.command, quoted_args = '" "'.join(args),
+                cword = cword, completion_function = self.completion_funcname)
 
         with open('/dev/null', 'w') as devnull:
             # Redirect STDERR to /dev/null since compopt complains to be not
