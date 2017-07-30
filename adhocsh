@@ -147,9 +147,11 @@ while True:
         full_command = [ shell.command ]
         full_command.extend(args)
         call(full_command)
+    except ValueError as e:
+        print ("Error: " + e.message)
     except KeyboardInterrupt:
         print ('^C')
     except EOFError:
-        print()
+        print ()
         break
 
