@@ -40,6 +40,14 @@ class AdHocShell(object):
         self.default_subcommand = default
 
     def get_prompt(self):
+        if self.command == 'git':
+            script = 'source "{}"; __git_ps1 "{}@%s> "'.format(
+                    "/usr/lib/git-core/git-sh-prompt", self.command)
+            return check_output([ 'bash', '-c', script ])
+        if self.command == 'task':
+            context = check_output([ 'task', '_get', 'rc.context' ])[:-1]
+            return 'task@{}> '.format(context) if len (context) else 'task> '
+
         return self.command + '> '
 
     def complete(self, text, state):
