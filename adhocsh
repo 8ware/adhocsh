@@ -147,6 +147,10 @@ readline.set_completion_display_matches_hook(shell.display_matches)
 print ("Ad-hoc shell for {}.".format(command))
 print ("Hit Ctrl-D to leave!")
 
+# Execute default command once at startup
+if opts.allow_default and opts.default:
+    call([ shell.command, shell.default_subcommand ])
+
 while True:
     try:
         line = raw_input(shell.get_prompt())
