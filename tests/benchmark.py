@@ -11,51 +11,90 @@ from time import time
 from bash import BashInterpreter
 
 
-BASH_COMPLETION_INIT = """
-        source "/usr/share/bash-completion/completions/git"
-"""
-
-BASH_COMPLETION_SCRIPT = """
-        COMP_WORDS=( "git" "log" "--na" )
-        COMP_CWORD=2
-        _git
-        for match in "${COMPREPLY[@]}"; do
+BASH_COMPLETION_TEMPLATE = """
+        COMP_WORDS=( "{}" )
+        COMP_CWORD={}
+        {}
+        for match in "${{COMPREPLY[@]}}"; do
             echo "$match"
         done
 """
 
+BENCHMARK_CONFIGURATIONS = {
+        'git' : {
+            'init' : [
+                '/usr/share/bash-completion/bash_completion',
+                '/usr/share/bash-completion/completions/git',
+            ],
+            'fcompletion' : '_git',
+            'args' : [
+                'git', 'log', '--na',
+            ],
+            'cword' : 2,
+            'expected' : [
+#               '--name-only ', '--name-status ',
+                'HEAD ', 'ORIG_HEAD ', 'master ', 'origin/master ',
+            ],
+        },
+}
+
 RUNS = 1000
+
 
 interpreter = BashInterpreter()
 
 
+def init_persistently(files):
+    for f in files:
+        interpreter.send('source "{}"\n'.format(f))
+    return ''
+
 def exec_persistently(code):
     return interpreter.eval(code)
+
+def init_independently(files):
+    initialization = ''
+    for f in files:
+        initialization += 'source "{}"\n'.format(f)
+    return initialization
 
 def exec_independently(code):
 #   with open('/dev/null', 'w') as devnull:
 #       output = check_output([ 'bash', '-c', script ], stderr=devnull)
     return check_output([ 'bash', '-c', code ])[:-1], ''
 
-def benchmark(function, code, expected):
-    start = time()
-    for i in range(RUNS):
-        stdout, stderr = function(code)
-        if stdout != expected:
-            print ("Expected output not received")
-            print ("Expected", expected)
-            print ("Actual", stdout)
-    end = time()
+def assert_equals(output, expected):
+    expected_out = "\n".join(expected)
+    if output != expected_out:
+        print ("Expected output not received")
+        print ("Expected: {}".format(expected_out.replace("\n", "\\n")))
+        print ("Actual:   {}".format(output.replace("\n", "\\n")))
 
+def print_result(start, end):
     duration = end - start
     average = duration/RUNS
 
     print ("Run function {} times in {}s; this is {}ms on average.".format(RUNS, duration, average*RUNS))
 
+def benchmark(execution, initialization, target):
+    init = BENCHMARK_CONFIGURATIONS[target]['init']
+    fcompletion = BENCHMARK_CONFIGURATIONS[target]['fcompletion']
+    args = BENCHMARK_CONFIGURATIONS[target]['args']
+    cword = BENCHMARK_CONFIGURATIONS[target]['cword']
+    expected = BENCHMARK_CONFIGURATIONS[target]['expected']
 
-interpreter.send(BASH_COMPLETION_INIT)
+    code = initialization(init)
+    code += BASH_COMPLETION_TEMPLATE.format('" "'.join(args), cword, fcompletion)
 
-benchmark(exec_persistently, BASH_COMPLETION_SCRIPT, '--name-only \n--name-status ')
-benchmark(exec_independently, BASH_COMPLETION_INIT + "\n" + BASH_COMPLETION_SCRIPT,
-        '--name-only \n--name-status ')
+    start = time()
+    for i in range(RUNS):
+        stdout, stderr = execution(code)
+        assert_equals(stdout, expected)
+    end = time()
+
+    print_result(start, end)
+
+
+benchmark(exec_persistently, init_persistently, 'git')
+benchmark(exec_independently, init_independently, 'git')
 
