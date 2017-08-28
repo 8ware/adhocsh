@@ -1,5 +1,7 @@
 #! /usr/bin/env python
 
+from __future__ import print_function
+
 import sys
 from os.path import abspath, join, dirname
 sys.path.insert(0, abspath(join(dirname(__file__), '..')))
@@ -88,9 +90,12 @@ def benchmark(execution, initialization, target):
 
     start = time()
     for i in range(RUNS):
+        print ("{}/{} ({:.0f}%)".format(i,RUNS,i*100.0/RUNS), end="\r")
+        sys.stdout.flush()
         stdout, stderr = execution(code)
         assert_equals(stdout, expected)
     end = time()
+    print ("{}/{} (100%)".format(RUNS, RUNS))
 
     print_result(start, end)
 
