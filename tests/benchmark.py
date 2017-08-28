@@ -72,8 +72,7 @@ def assert_equals(output, expected):
         print ("Expected: {}".format(expected_out.replace("\n", "\\n")))
         print ("Actual:   {}".format(output.replace("\n", "\\n")))
 
-def print_result(start, end):
-    duration = end - start
+def print_result(duration):
     average = duration/RUNS
 
     print ("Run function {} times in {}s; this is {}ms on average.".format(RUNS, duration, average*RUNS))
@@ -88,16 +87,18 @@ def benchmark(execution, initialization, target):
     code = initialization(init)
     code += BASH_COMPLETION_TEMPLATE.format('" "'.join(args), cword, fcompletion)
 
-    start = time()
+    elapsed = 0
     for i in range(RUNS):
         print ("{}/{} ({:.0f}%)".format(i,RUNS,i*100.0/RUNS), end="\r")
         sys.stdout.flush()
+        start = time()
         stdout, stderr = execution(code)
+        end = time()
+        elapsed += end - start
         assert_equals(stdout, expected)
-    end = time()
     print ("{}/{} (100%)".format(RUNS, RUNS))
 
-    print_result(start, end)
+    print_result(elapsed)
 
 
 benchmark(exec_persistently, init_persistently, 'git')
