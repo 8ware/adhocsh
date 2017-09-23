@@ -65,10 +65,10 @@ def exec_independently(code):
 #       output = check_output([ 'bash', '-c', script ], stderr=devnull)
     return check_output([ 'bash', '-c', code ])[:-1], ''
 
-def assert_equals(output, expected):
+def assert_equals(iteration, output, expected):
     expected_out = "\n".join(expected)
     if output != expected_out:
-        print ("Expected output not received")
+        print ("[{}] Expected output not received".format(iteration))
         print ("  Expected: {}".format(expected_out.replace("\n", "\\n")))
         print ("  Actual:   {}".format(output.replace("\n", "\\n")))
 
@@ -98,7 +98,7 @@ def benchmark(execution, initialization, target):
         stdout, stderr = execution(code)
         end = time()
         elapsed += end - start
-        assert_equals(stdout, expected)
+        assert_equals(i, stdout, expected):
     print ("{}/{} (100%)".format(RUNS, RUNS))
 
     print_result(elapsed)
