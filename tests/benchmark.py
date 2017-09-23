@@ -76,6 +76,10 @@ def print_result(duration):
     print ("Ran function {} times in {:.4f}s; this is {:.4f}ms on average.".format(
         RUNS, duration/RUNS*1000, duration/RUNS))
 
+def print_conclusion(elapsed_persistently, elapsed_independently):
+    print ("Persistent implementation is {:.0f}x faster than the independent one".format(
+        float (elapsed_independently) / elapsed_persistently))
+
 def benchmark(execution, initialization, target):
     init = BENCHMARK_CONFIGURATIONS[target]['init']
     fcompletion = BENCHMARK_CONFIGURATIONS[target]['fcompletion']
