@@ -46,21 +46,21 @@ RUNS = 1000
 interpreter = BashInterpreter()
 
 
-def init_persistently(files):
+def init_stateful(files):
     for f in files:
         interpreter.send('source "{}"\n'.format(f))
     return ''
 
-def exec_persistently(code):
+def exec_stateful(code):
     return interpreter.eval(code)
 
-def init_independently(files):
+def init_stateless(files):
     initialization = ''
     for f in files:
         initialization += 'source "{}"\n'.format(f)
     return initialization
 
-def exec_independently(code):
+def exec_stateless(code):
 #   with open('/dev/null', 'w') as devnull:
 #       output = check_output([ 'bash', '-c', script ], stderr=devnull)
     return check_output([ 'bash', '-c', code ])[:-1], ''
@@ -80,13 +80,13 @@ def print_result(duration, errors):
         RUNS, duration/RUNS*1000, duration/RUNS))
     print ("Encountered {} output errors ({:.2f}%).".format(errors, float (errors)*100/RUNS))
 
-def print_conclusion(elapsed_persistently, elapsed_independently):
-    factor = float (elapsed_independently) / elapsed_persistently
+def print_conclusion(elapsed_stateful, elapsed_stateless):
+    factor = float (elapsed_stateless) / elapsed_stateful
     adverb = 'faster'
     if factor < 1:
         factor = 1 / factor
         adverb = 'slower'
-    print ("Persistent implementation is {:.0f}x {} than the independent one".format(
+    print ("Stateful implementation is {:.0f}x {} than the stateless one".format(
         factor, adverb))
 
 def benchmark(execution, initialization, target):
@@ -116,8 +116,8 @@ def benchmark(execution, initialization, target):
 
     return elapsed
 
-e1 = benchmark(exec_persistently, init_persistently, 'git')
-e2 = benchmark(exec_independently, init_independently, 'git')
+e1 = benchmark(exec_stateful, init_stateful, 'git')
+e2 = benchmark(exec_stateless, init_stateless, 'git')
 
 print_conclusion(e1, e2)
 
