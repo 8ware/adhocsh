@@ -65,12 +65,13 @@ def exec_independently(code):
 #       output = check_output([ 'bash', '-c', script ], stderr=devnull)
     return check_output([ 'bash', '-c', code ])[:-1], ''
 
-def assert_equals(iteration, output, expected):
+def assert_equals(iteration, output, expected, verbose = False):
     expected_out = "\n".join(expected)
     if output != expected_out:
-        print ("[{}] Expected output not received".format(iteration))
-        print ("  Expected: {}".format(expected_out.replace("\n", "\\n")))
-        print ("  Actual:   {}".format(output.replace("\n", "\\n")))
+        if verbose:
+            print ("[{}] Expected output not received".format(iteration))
+            print ("  Expected: {}".format(expected_out.replace("\n", "\\n")))
+            print ("  Actual:   {}".format(output.replace("\n", "\\n")))
         return False
     return True
 
