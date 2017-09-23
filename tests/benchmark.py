@@ -108,7 +108,10 @@ def benchmark(execution, initialization, target):
 
     print_result(elapsed)
 
+    return elapsed
 
-benchmark(exec_persistently, init_persistently, 'git')
-benchmark(exec_independently, init_independently, 'git')
+e1 = benchmark(exec_persistently, init_persistently, 'git')
+e2 = benchmark(exec_independently, init_independently, 'git')
+
+print_conclusion(e1, e2)
 
