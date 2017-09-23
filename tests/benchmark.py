@@ -71,10 +71,13 @@ def assert_equals(iteration, output, expected):
         print ("[{}] Expected output not received".format(iteration))
         print ("  Expected: {}".format(expected_out.replace("\n", "\\n")))
         print ("  Actual:   {}".format(output.replace("\n", "\\n")))
+        return False
+    return True
 
-def print_result(duration):
+def print_result(duration, errors):
     print ("Ran function {} times in {:.4f}s; this is {:.4f}ms on average.".format(
         RUNS, duration/RUNS*1000, duration/RUNS))
+    print ("Encountered {} output errors ({:.2f}%).".format(errors, float (errors)*100/RUNS))
 
 def print_conclusion(elapsed_persistently, elapsed_independently):
     factor = float (elapsed_independently) / elapsed_persistently
@@ -96,6 +99,7 @@ def benchmark(execution, initialization, target):
     code += BASH_COMPLETION_TEMPLATE.format('" "'.join(args), cword, fcompletion)
 
     elapsed = 0
+    errors = 0
     for i in range(RUNS):
         print ("{}/{} ({:.0f}%)".format(i,RUNS,i*100.0/RUNS), end="\r")
         sys.stdout.flush()
@@ -103,10 +107,11 @@ def benchmark(execution, initialization, target):
         stdout, stderr = execution(code)
         end = time()
         elapsed += end - start
-        assert_equals(i, stdout, expected):
+        if not assert_equals(i, stdout, expected):
+            errors += 1
     print ("{}/{} (100%)".format(RUNS, RUNS))
 
-    print_result(elapsed)
+    print_result(elapsed, errors)
 
     return elapsed
 
