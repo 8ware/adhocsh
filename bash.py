@@ -18,7 +18,7 @@ class BashInterpreter(object):
 
     def ready(self, timeout = None):
         r,w,x = select([ self.process.stdout, self.process.stderr ], [], [], timeout)
-        return len (r)
+        return r
 
     def eval(self, code):
         if not code.strip():
@@ -26,17 +26,21 @@ class BashInterpreter(object):
 
         self.send(code)
 
-        self.ready()
+        ready = self.ready()
 
-        stdout = self.receive(self.process.stdout)
-        stderr = self.receive(self.process.stderr)
+        stdout = self.receive(self.process.stdout, ready)
+        stderr = self.receive(self.process.stderr, ready)
+
         return stdout, stderr
 
     def send(self, code):
         self.process.stdin.write(code + "\n")
 #       self.process.stdin.flush()
 
-    def receive(self, channel):
+    def receive(self, channel, ready):
+        if not channel in ready:
+            return ''
+
         output = ''
         while True:
             try:
