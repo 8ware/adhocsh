@@ -6,21 +6,29 @@ from fcntl import fcntl, F_SETFL
 import time
 import sys
 
+from select import select
+
 
 class BashInterpreter(object):
 
-    def __init__(self, delay = .03):
-        self.delay = delay
+    def __init__(self):
         self.process = Popen([ 'bash' ], stdin=PIPE, stdout=PIPE, stderr=PIPE)
         fcntl(self.process.stdout.fileno(), F_SETFL, O_NONBLOCK)
         fcntl(self.process.stderr.fileno(), F_SETFL, O_NONBLOCK)
+
+    def ready(self, timeout = 0):
+        r,w,x = select([ self.process.stdout, self.process.stderr ], [], [], timeout)
+        return len (r)
 
     def eval(self, code):
         if not code.strip():
             return '', ''
 
         self.send(code)
-        time.sleep(self.delay)
+
+        while not self.ready():
+            pass
+
         stdout = self.receive(self.process.stdout)
         stderr = self.receive(self.process.stderr)
         return stdout, stderr
