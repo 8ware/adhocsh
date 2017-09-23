@@ -16,6 +16,9 @@ class BashInterpreter(object):
         fcntl(self.process.stderr.fileno(), F_SETFL, O_NONBLOCK)
 
     def eval(self, code):
+        if not code.strip():
+            return '', ''
+
         self.send(code)
         time.sleep(self.delay)
         stdout = self.receive(self.process.stdout)
