@@ -16,7 +16,7 @@ class BashInterpreter(object):
         fcntl(self.process.stdout.fileno(), F_SETFL, O_NONBLOCK)
         fcntl(self.process.stderr.fileno(), F_SETFL, O_NONBLOCK)
 
-    def ready(self, timeout = 0):
+    def ready(self, timeout = None):
         r,w,x = select([ self.process.stdout, self.process.stderr ], [], [], timeout)
         return len (r)
 
@@ -26,8 +26,7 @@ class BashInterpreter(object):
 
         self.send(code)
 
-        while not self.ready():
-            pass
+        self.ready()
 
         stdout = self.receive(self.process.stdout)
         stderr = self.receive(self.process.stderr)
