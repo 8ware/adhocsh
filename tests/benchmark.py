@@ -69,13 +69,12 @@ def assert_equals(output, expected):
     expected_out = "\n".join(expected)
     if output != expected_out:
         print ("Expected output not received")
-        print ("Expected: {}".format(expected_out.replace("\n", "\\n")))
-        print ("Actual:   {}".format(output.replace("\n", "\\n")))
+        print ("  Expected: {}".format(expected_out.replace("\n", "\\n")))
+        print ("  Actual:   {}".format(output.replace("\n", "\\n")))
 
 def print_result(duration):
-    average = duration/RUNS
-
-    print ("Run function {} times in {}s; this is {}ms on average.".format(RUNS, duration, average*RUNS))
+    print ("Ran function {} times in {:.4f}s; this is {:.4f}ms on average.".format(
+        RUNS, duration/RUNS*1000, duration/RUNS))
 
 def benchmark(execution, initialization, target):
     init = BENCHMARK_CONFIGURATIONS[target]['init']
