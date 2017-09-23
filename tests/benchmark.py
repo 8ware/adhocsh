@@ -77,8 +77,13 @@ def print_result(duration):
         RUNS, duration/RUNS*1000, duration/RUNS))
 
 def print_conclusion(elapsed_persistently, elapsed_independently):
-    print ("Persistent implementation is {:.0f}x faster than the independent one".format(
-        float (elapsed_independently) / elapsed_persistently))
+    factor = float (elapsed_independently) / elapsed_persistently
+    adverb = 'faster'
+    if factor < 1:
+        factor = 1 / factor
+        adverb = 'slower'
+    print ("Persistent implementation is {:.0f}x {} than the independent one".format(
+        factor, adverb))
 
 def benchmark(execution, initialization, target):
     init = BENCHMARK_CONFIGURATIONS[target]['init']
