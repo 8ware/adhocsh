@@ -10,7 +10,7 @@ from subprocess import check_output
 from time import time
 
 
-from bash import BashInterpreter
+from bash import BashInterpreter, wait_passively, wait_actively, read_naively, read_carefully
 
 
 BASH_COMPLETION_TEMPLATE = """
@@ -43,7 +43,11 @@ BENCHMARK_CONFIGURATIONS = {
 RUNS = 1000
 
 
-interpreter = BashInterpreter()
+# TODO Find best combination in terms of error rate and performance
+interpreter = BashInterpreter(wait_passively, None, read_carefully)
+#interpreter = BashInterpreter(wait_passively, None, read_naively)
+#interpreter = BashInterpreter(wait_actively, 0, read_carefully)
+#interpreter = BashInterpreter(wait_actively, 0, read_naively)
 
 
 def init_stateful(files):
