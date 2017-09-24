@@ -43,13 +43,6 @@ BENCHMARK_CONFIGURATIONS = {
 RUNS = 1000
 
 
-# TODO Find best combination in terms of error rate and performance
-interpreter = BashInterpreter(wait_passively, None, read_carefully)
-#interpreter = BashInterpreter(wait_passively, None, read_naively)
-#interpreter = BashInterpreter(wait_actively, 0, read_carefully)
-#interpreter = BashInterpreter(wait_actively, 0, read_naively)
-
-
 def init_stateful(files):
     for f in files:
         interpreter.send('source "{}"\n'.format(f))
@@ -119,6 +112,13 @@ def benchmark(execution, initialization, target):
     print_result(elapsed, errors)
 
     return elapsed
+
+
+# TODO Find best combination in terms of error rate and performance
+interpreter = BashInterpreter(wait_passively, None, read_carefully)
+#interpreter = BashInterpreter(wait_passively, None, read_naively)
+#interpreter = BashInterpreter(wait_actively, 0, read_carefully)
+#interpreter = BashInterpreter(wait_actively, 0, read_naively)
 
 e1 = benchmark(exec_stateful, init_stateful, 'git')
 e2 = benchmark(exec_stateless, init_stateless, 'git')
