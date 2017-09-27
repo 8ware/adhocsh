@@ -73,9 +73,9 @@ def assert_equals(iteration, output, expected, verbose = False):
     return True
 
 def print_result(duration, errors):
-    print ("Ran function {} times in {:.4f}s; this is {:.4f}ms on average.".format(
+    print ("> Ran function {} times in {:.4f}s; this is {:.4f}ms on average.".format(
         RUNS, duration/RUNS*1000, duration/RUNS))
-    print ("Encountered {} output errors ({:.2f}%).".format(errors, float (errors)*100/RUNS))
+    print ("> Encountered {} output errors ({:.2f}%).".format(errors, float (errors)*100/RUNS))
 
 def print_conclusion(elapsed_stateful, elapsed_stateless):
     factor = float (elapsed_stateless) / elapsed_stateful
@@ -83,7 +83,7 @@ def print_conclusion(elapsed_stateful, elapsed_stateless):
     if factor < 1:
         factor = 1 / factor
         adverb = 'slower'
-    print ("Stateful implementation is {:.0f}x {} than the stateless one".format(
+    print ("> Stateful implementation is {:.0f}x {} than the stateless one".format(
         factor, adverb))
 
 def benchmark(execution, initialization, target):
@@ -107,21 +107,27 @@ def benchmark(execution, initialization, target):
         elapsed += end - start
         if not assert_equals(i, stdout, expected):
             errors += 1
-    print ("{}/{} (100%)".format(RUNS, RUNS))
 
     print_result(elapsed, errors)
 
     return elapsed
 
 
-# TODO Find best combination in terms of error rate and performance
-interpreter = BashInterpreter(wait_passively, None, read_carefully)
-#interpreter = BashInterpreter(wait_passively, None, read_naively)
-#interpreter = BashInterpreter(wait_actively, 0, read_carefully)
-#interpreter = BashInterpreter(wait_actively, 0, read_naively)
+CONFIGS = [
+        ("passively+carefully", wait_passively, None, read_carefully),
+        ("passively+naively", wait_passively, None, read_naively),
+        ("actively+carefully", wait_actively, 0, read_carefully),
+        ("actively+naively", wait_actively, 0, read_naively),
+]
 
-e1 = benchmark(exec_stateful, init_stateful, 'git')
-e2 = benchmark(exec_stateless, init_stateless, 'git')
-
-print_conclusion(e1, e2)
+for config in CONFIGS:
+    description = config[0]
+    wait = config[1]
+    timeout = config[2]
+    read = config[3]
+    print (description)
+    interpreter = BashInterpreter(wait, timeout, read)
+    e1 = benchmark(exec_stateful, init_stateful, 'git')
+    e2 = benchmark(exec_stateless, init_stateless, 'git')
+    print_conclusion(e1, e2)
 
