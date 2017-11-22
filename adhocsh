@@ -65,6 +65,12 @@ class AdHocShell(object):
             cword += 0 if len (text) or len (line) and line[-1:] != ' ' else 1
             self.matches = self.get_bash_completion(args, cword)
 
+            # Filter matches by prefix (necessary since docker completes both
+            # container name and ID, e.g. docker stop ...)
+            self.matches = filter (lambda m : m.startswith(text), self.matches)
+
+            self.matches = map (lambda m : m + ('/' if path.isdir(m) else ''), self.matches)
+
             if not len (self.matches):
                 self.matches = self.get_file_completion(text)
 
