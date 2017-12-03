@@ -91,21 +91,21 @@ class AdHocShell(object):
 
         print ()
 
-        tpl = "{:<" + str(int(max(map(len, matches)) * 1.2)) + "}"
+        tpl = "{:<" + str (int (max (map (len, matches)) * 1.2)) + "}"
 
         buffer = ""
         for match in matches:
             match = tpl.format(match)
-            if len(buffer + match) > columns:
-                print(buffer.strip())
+            if len (buffer + match) > columns:
+                print (buffer.strip())
                 buffer = ""
             buffer += match
 
         if buffer:
-            print(buffer.strip())
+            print (buffer.strip())
 
-        print(self.get_prompt(), end="")
-        print(line_buffer, end="")
+        print (self.get_prompt(), end="")
+        print (line_buffer, end="")
         sys.stdout.flush()
 
     def get_bash_completion(self, args, cword):
@@ -114,7 +114,7 @@ class AdHocShell(object):
                 command = self.command, quoted_args = '" "'.join(args),
                 cword = cword, completion_function = self.completion_funcname)
 
-        with open('/dev/null', 'w') as devnull:
+        with open ('/dev/null', 'w') as devnull:
             # Redirect STDERR to /dev/null since compopt complains to be not
             # in completion mode currently
             output = check_output([ 'bash', '-c', script ], stderr=devnull)
@@ -160,7 +160,7 @@ if opts.allow_default and opts.default:
 
 while True:
     try:
-        line = raw_input(shell.get_prompt())
+        line = raw_input (shell.get_prompt())
         args = shlex.split(line)
         argc = len (args)
         if not argc and not opts.allow_default:
