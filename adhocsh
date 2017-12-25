@@ -74,16 +74,16 @@ class AdHocShell(object):
             if not len (self.matches):
                 self.matches = self.get_file_completion(text)
 
-        # Return match indexed by state
-        try:
-            match = self.matches[state]
-            # Word Boundary Pattern
-            wbp = re.compile('[ :=/]$') # See COMP_WORDBREAKS (git adds ':')
-            if len (self.matches) == 1 and match and not wbp.search(match):
-                match += ' '
-            return match
-        except IndexError:
+        if state >= len (self.matches):
             return None
+
+        # Return match indexed by state
+        match = self.matches[state]
+        # Word Boundary Pattern
+        wbp = re.compile('[ :=/]$') # See COMP_WORDBREAKS (git adds ':')
+        if len (self.matches) == 1 and match and not wbp.search(match):
+            match += ' '
+        return match
 
     def display_matches(self, substitution, matches, longest_match_length):
         line_buffer = readline.get_line_buffer()
