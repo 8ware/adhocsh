@@ -135,46 +135,47 @@ class AdHocShell(object):
         return filenames
 
 
-parser = OptionParser()
-parser.add_option('-d', '--default', action='store', dest='default', default=None)
-parser.add_option('-f', '--compfunc', action='store', dest='compfunc', default=None)
-parser.add_option('-D', '--no-default', action='store_false', dest='allow_default', default=True)
-parser.add_option('-c', '--completion', action='store', dest='completion')
-opts, args = parser.parse_args()
+if __name__ == '__main__':
+    parser = OptionParser()
+    parser.add_option('-d', '--default', action='store', dest='default', default=None)
+    parser.add_option('-f', '--compfunc', action='store', dest='compfunc', default=None)
+    parser.add_option('-D', '--no-default', action='store_false', dest='allow_default', default=True)
+    parser.add_option('-c', '--completion', action='store', dest='completion')
+    opts, args = parser.parse_args()
 
-command = args[0]
-completion = opts.completion if opts.completion else path.join(BASH_COMPLETION_DIR, command)
+    command = args[0]
+    completion = opts.completion if opts.completion else path.join(BASH_COMPLETION_DIR, command)
 
-shell = AdHocShell(command, completion, compfunc=opts.compfunc, default=opts.default)
-readline.set_completer_delims(' \t\n;:=')
-readline.set_completer(shell.complete)
-readline.parse_and_bind('tab: complete')
-readline.set_completion_display_matches_hook(shell.display_matches)
+    shell = AdHocShell(command, completion, compfunc=opts.compfunc, default=opts.default)
+    readline.set_completer_delims(' \t\n;:=')
+    readline.set_completer(shell.complete)
+    readline.parse_and_bind('tab: complete')
+    readline.set_completion_display_matches_hook(shell.display_matches)
 
-print ("Ad-hoc shell for {}.".format(command))
-print ("Hit Ctrl-D to leave!")
+    print ("Ad-hoc shell for {}.".format(command))
+    print ("Hit Ctrl-D to leave!")
 
-# Execute default command once at startup
-if opts.allow_default and opts.default:
-    call([ shell.command, shell.default_subcommand ])
+    # Execute default command once at startup
+    if opts.allow_default and opts.default:
+        call([ shell.command, shell.default_subcommand ])
 
-while True:
-    try:
-        line = raw_input (shell.get_prompt())
-        args = shlex.split(line)
-        argc = len (args)
-        if not argc and not opts.allow_default:
-            continue
-        if not argc and shell.default_subcommand:
-            args = [ shell.default_subcommand ]
-        full_command = [ shell.command ]
-        full_command.extend(args)
-        call(full_command)
-    except ValueError as e:
-        print ("Error: " + e.message)
-    except KeyboardInterrupt:
-        print ('^C')
-    except EOFError:
-        print ()
-        break
+    while True:
+        try:
+            line = raw_input (shell.get_prompt())
+            args = shlex.split(line)
+            argc = len (args)
+            if not argc and not opts.allow_default:
+                continue
+            if not argc and shell.default_subcommand:
+                args = [ shell.default_subcommand ]
+            full_command = [ shell.command ]
+            full_command.extend(args)
+            call(full_command)
+        except ValueError as e:
+            print ("Error: " + e.message)
+        except KeyboardInterrupt:
+            print ('^C')
+        except EOFError:
+            print ()
+            break
 
