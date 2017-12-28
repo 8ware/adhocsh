@@ -40,10 +40,13 @@ class AdHocShell(object):
         self.default_subcommand = default
 
     def get_prompt(self):
+        prompt = self.command
+
         if self.command == 'git':
-            script = 'source "{}"; __git_ps1 "{}@%s> "'.format(
+            script = 'source "{}"; __git_ps1 "{}@%s"'.format(
                     "/usr/lib/git-core/git-sh-prompt", self.command)
-            return check_output([ 'bash', '-c', script ])
+            prompt = check_output([ 'bash', '-c', script ])
+
         if self.command == 'task':
             context = check_output([ 'task', '_get', 'rc.context' ])[:-1]
             count = check_output([ 'task', 'rc.context:none',
@@ -51,9 +54,9 @@ class AdHocShell(object):
                 'or', 'status:waiting' ])[:-1]
             info = '@' + context if context else ''
             info += '#' + count
-            return 'task{}> '.format(info)
+            prompt = 'task{}'.format(info)
 
-        return self.command + '> '
+        return prompt + '> '
 
     def complete(self, text, state):
         line = readline.get_line_buffer()
