@@ -5,7 +5,7 @@ from __future__ import print_function
 import sys
 import readline
 from os import environ, path, listdir
-from subprocess import call, check_output
+from subprocess import call, check_output, Popen, PIPE
 from optparse import OptionParser
 import shlex
 import re
@@ -114,12 +114,10 @@ class AdHocShell(object):
                 command = self.command, quoted_args = '" "'.join(args),
                 cword = cword, completion_function = self.completion_funcname)
 
-        with open ('/dev/null', 'w') as devnull:
-            # Redirect STDERR to /dev/null since compopt complains to be not
-            # in completion mode currently
-            output = check_output([ 'bash', '-c', script ], stderr=devnull)
+        completion = Popen([ 'bash', '-c', script ], stdout=PIPE, stderr=PIPE)
+        stdout, stderr = completion.communicate()
 
-        matches = filter (None, output[:-1].split("\n"))
+        matches = filter (None, stdout[:-1].split("\n"))
 
         return matches
 
