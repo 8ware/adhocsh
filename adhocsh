@@ -143,14 +143,15 @@ class AdHocShell(object):
         return matches
 
     def get_file_completion(self, prefix):
-        curdir = path.dirname(prefix) or '.'
+        curdir = path.dirname(prefix)
         curfil = path.basename(prefix)
         filenames = []
-        for entry in listdir(curdir):
+        for entry in listdir(curdir or '.'):
             if entry.startswith(curfil):
-                if (path.isdir(entry)):
-                    entry += '/'
-                filenames.append(entry)
+                filepath = path.join(curdir, entry)
+                if (path.isdir(filepath)):
+                    filepath += '/'
+                filenames.append(filepath)
         return filenames
 
 
