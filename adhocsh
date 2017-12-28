@@ -58,6 +58,14 @@ class AdHocShell(object):
 
         return prompt + '> '
 
+    def redraw_prompt(self, message):
+        """
+        Redraws the prompt after printing the given message.
+        """
+        print ("\r"+message)
+        print (self.get_prompt()+readline.get_line_buffer(), end="")
+        sys.stdout.flush()
+
     def complete(self, text, state):
         line = readline.get_line_buffer()
         args = line.split()
@@ -89,7 +97,6 @@ class AdHocShell(object):
         return match
 
     def display_matches(self, substitution, matches, longest_match_length):
-        line_buffer = readline.get_line_buffer()
         columns = int (environ.get("COLUMNS", 80))
 
         print ()
@@ -104,12 +111,7 @@ class AdHocShell(object):
                 buffer = ""
             buffer += match
 
-        if buffer:
-            print (buffer.strip())
-
-        print (self.get_prompt(), end="")
-        print (line_buffer, end="")
-        sys.stdout.flush()
+        self.redraw_prompt(buffer.strip())
 
     def get_bash_completion(self, args, cword):
         script = BASH_COMPLETION_SCRIPT_TEMPLATE.format(
@@ -119,6 +121,9 @@ class AdHocShell(object):
 
         completion = Popen([ 'bash', '-c', script ], stdout=PIPE, stderr=PIPE)
         stdout, stderr = completion.communicate()
+
+        if stderr:
+            self.redraw_prompt(stderr[:-1])
 
         matches = filter (None, stdout[:-1].split("\n"))
 
