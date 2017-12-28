@@ -4,12 +4,15 @@ from __future__ import print_function
 
 import sys
 import readline
-from os import environ, path, listdir
+from os import environ, path, listdir, makedirs, getenv
 from subprocess import call, check_output, Popen, PIPE
 from optparse import OptionParser
 import shlex
 import re
 
+
+HISTORY_BASE_DIR = getenv('XDG_CONFIG_HOME') + '/' + 'adhocsh'
+HISTORY_PATH_TEMPLATE = HISTORY_BASE_DIR + '/{cmd:s}.history'
 
 BASH_COMPLETION_DIR = '/usr/share/bash-completion/completions'
 
@@ -38,6 +41,16 @@ class AdHocShell(object):
         self.completion = completion
         self.completion_funcname = compfunc if compfunc else '_' + command
         self.default_subcommand = default
+        self.history = HISTORY_PATH_TEMPLATE.format(cmd=command)
+
+    def load_history(self):
+        if path.exists(self.history):
+            readline.read_history_file(self.history)
+
+    def save_history(self):
+        if not path.exists(path.dirname(self.history)):
+            makedirs(path.dirname(self.history))
+        readline.write_history_file(self.history)
 
     def get_prompt(self):
         prompt = self.command
@@ -165,6 +178,8 @@ if __name__ == '__main__':
     if opts.allow_default and opts.default:
         call([ shell.command, shell.default_subcommand ])
 
+    shell.load_history()
+
     while True:
         try:
             line = raw_input (shell.get_prompt())
@@ -183,5 +198,6 @@ if __name__ == '__main__':
             print ('^C')
         except EOFError:
             print ()
+            shell.save_history()
             break
 
