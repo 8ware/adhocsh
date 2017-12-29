@@ -109,6 +109,20 @@ class AdHocShell(object):
             match += ' '
         return match
 
+    def get_comp_setup(self, line, bidx, eidx):
+        words = line.split()
+
+        offset = 0
+        cword = 0
+        for word in words:
+            start = line.find(word, offset)
+            if start == bidx and start + len (word) == eidx:
+                break
+            cword += 1
+            offset += start + len (word)
+
+        return (words, cword)
+
     def display_matches(self, substitution, matches, longest_match_length):
         columns = int (environ.get("COLUMNS", 80))
 
