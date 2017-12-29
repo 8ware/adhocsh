@@ -80,13 +80,12 @@ class AdHocShell(object):
         sys.stdout.flush()
 
     def complete(self, text, state):
-        line = readline.get_line_buffer()
-        args = line.split()
         if state == 0:  # On first trigger, build possible matches
-            cword = len (args)
-            # Try to complete next word (+1) if text is empty and separated
-            # from the previous word by a whitespace
-            cword += 0 if len (text) or len (line) and line[-1:] != ' ' else 1
+            line = readline.get_line_buffer()
+            bidx = readline.get_begidx()
+            eidx = readline.get_endidx()
+            (args, cword) = self.get_comp_setup(line, bidx, eidx)
+
             self.matches = self.get_bash_completion(args, cword)
 
             # Filter matches by prefix (necessary since docker completes both
@@ -144,7 +143,7 @@ class AdHocShell(object):
         script = BASH_COMPLETION_SCRIPT_TEMPLATE.format(
                 completion_file = self.completion,
                 command = self.command, quoted_args = '" "'.join(args),
-                cword = cword, completion_function = self.completion_funcname)
+                cword = cword+1, completion_function = self.completion_funcname)
 
         completion = Popen([ 'bash', '-c', script ], stdout=PIPE, stderr=PIPE)
         stdout, stderr = completion.communicate()
