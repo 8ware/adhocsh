@@ -9,6 +9,7 @@ from subprocess import call, check_output, Popen, PIPE
 from optparse import OptionParser
 import shlex
 import re
+from termcolor import colored
 
 
 HISTORY_BASE_DIR = getenv('XDG_CONFIG_HOME') + '/' + 'adhocsh'
@@ -42,6 +43,7 @@ class AdHocShell(object):
         self.completion_funcname = compfunc if compfunc else '_' + command
         self.default_subcommand = default.split() if default else []
         self.history = HISTORY_PATH_TEMPLATE.format(cmd=command)
+        self.exitcode = 0
 
     def load_history(self):
         if path.exists(self.history):
@@ -69,7 +71,7 @@ class AdHocShell(object):
             info += '#' + count
             prompt = 'task{}'.format(info)
 
-        return prompt + '> '
+        return prompt + colored('> ', 'green' if not self.exitcode else 'red')
 
     def redraw_prompt(self, message):
         """
@@ -209,7 +211,7 @@ if __name__ == '__main__':
                 args = shell.default_subcommand
             full_command = [ shell.command ]
             full_command.extend(args)
-            call(full_command)
+            shell.exitcode = call(full_command)
         except ValueError as e:
             print ("Error: " + e.message)
         except KeyboardInterrupt:
