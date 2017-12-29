@@ -34,6 +34,24 @@ class CommandLineParserTest(unittest.TestCase):
         setup = shell.get_comp_setup('add  doc/Comp ', 14, 14)
         self.assertEquals(setup, (['add', 'doc/Comp'], 2))
 
+    def testQuoted(self):
+        self.skipTest("Not implemented, yet")
+        #                             012345678901234567890123456789
+        setup = shell.get_comp_setup('add "s p a c e s.pdf" doc/Comp', 22, 30)
+        self.assertEquals(setup, (['add', 's p a c e s.pdf', 'doc/Comp'], 2))
+
+    def testEscaped(self):
+        self.skipTest("Not implemented, yet")
+        #                             012345678901234567890123456789012
+        setup = shell.get_comp_setup('add s\ p\ a\ c\ e\ s.pdf doc/Comp', 25, 33)
+        self.assertEquals(setup, (['add', 's p a c e s.pdf', 'doc/Comp'], 2))
+
+    def testQuotedOpen(self):
+        self.skipTest("Not implemented, yet")
+        #                             0123456
+        setup = shell.get_comp_setup('add "a ', 4, 7)
+        self.assertEquals(setup, (['add', 'a '], 1))
+
 
 if __name__ == '__main__':
     unittest.main()
