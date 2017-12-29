@@ -5,7 +5,7 @@ from __future__ import print_function
 import sys
 import readline
 from os import environ, path, listdir, makedirs, getenv
-from subprocess import call, check_output, Popen, PIPE
+from subprocess import call, check_output, Popen, PIPE, CalledProcessError
 from optparse import OptionParser
 import shlex
 import re
@@ -57,19 +57,22 @@ class AdHocShell(object):
     def get_prompt(self):
         prompt = self.command
 
-        if self.command == 'git':
-            script = 'source "{}"; __git_ps1 "{}@%s"'.format(
-                    "/usr/lib/git-core/git-sh-prompt", self.command)
-            prompt = check_output([ 'bash', '-c', script ])
+        try:
+            if self.command == 'git':
+                script = 'source "{}"; __git_ps1 "{}@%s"'.format(
+                        "/usr/lib/git-core/git-sh-prompt", self.command)
+                prompt = check_output([ 'bash', '-c', script ])
 
-        if self.command == 'task':
-            context = check_output([ 'task', '_get', 'rc.context' ])[:-1]
-            count = check_output([ 'task', 'rc.context:none',
-                'rc.verbose:nothing', 'count', 'status:pending',
-                'or', 'status:waiting' ])[:-1]
-            info = '@' + context if context else ''
-            info += '#' + count
-            prompt = 'task{}'.format(info)
+            if self.command == 'task':
+                context = check_output([ 'task', '_get', 'rc.context' ])[:-1]
+                count = check_output([ 'task', 'rc.context:none',
+                    'rc.verbose:nothing', 'count', 'status:pending',
+                    'or', 'status:waiting' ])[:-1]
+                info = '@' + context if context else ''
+                info += '#' + count
+                prompt = 'task{}'.format(info)
+        except CalledProcessError as e:
+            print (e.message, end="")
 
         return prompt + colored('> ', 'green' if not self.exitcode else 'red')
 
