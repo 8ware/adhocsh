@@ -37,11 +37,12 @@ BASH_COMPLETION_SCRIPT_TEMPLATE = """
 
 class AdHocShell(object):
 
-    def __init__(self, command, completion, compfunc=None, default=None):
+    def __init__(self, command, completion, compfunc=None, default=None, file_completion=True):
         self.command = command
         self.completion = completion
         self.completion_funcname = compfunc if compfunc else '_' + command
         self.default_subcommand = default.split() if default else []
+        self.file_completion = file_completion
         self.history = HISTORY_PATH_TEMPLATE.format(cmd=command)
         self.exitcode = 0
 
@@ -99,7 +100,7 @@ class AdHocShell(object):
 
             self.matches = map (lambda m : m + ('/' if path.isdir(m) else ''), self.matches)
 
-            if not len (self.matches):
+            if not len (self.matches) and self.file_completion:
                 self.matches = self.get_file_completion(text)
 
         if state >= len (self.matches):
@@ -180,12 +181,14 @@ if __name__ == '__main__':
     parser.add_option('-D', '--no-default', action='store_false', dest='allow_default', default=True)
     parser.add_option('-c', '--completion', action='store', dest='completion')
     parser.add_option('-H', '--no-history', action='store_false', dest='enable_history', default=True)
+    parser.add_option('-F', '--no-file-completion', action='store_false', dest='file_completion', default=True)
     opts, args = parser.parse_args()
 
     command = args[0]
     completion = opts.completion if opts.completion else path.join(BASH_COMPLETION_DIR, command)
 
-    shell = AdHocShell(command, completion, compfunc=opts.compfunc, default=opts.default)
+    shell = AdHocShell(command, completion, compfunc=opts.compfunc,
+            default=opts.default, file_completion=opts.file_completion)
     readline.set_completer_delims(' \t\n;:=')
     readline.set_completer(shell.complete)
     readline.parse_and_bind('tab: complete')
