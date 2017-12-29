@@ -1,13 +1,12 @@
 
-import sys
-from os.path import abspath, join, dirname
-sys.path.insert(0, abspath(join(dirname(__file__), '..')))
+import testenv
+from adhocsh import AdHocShell
 
 # Maybe use pytest instead
 import unittest
-from adhocsh import AdHocShell
 
 import os
+from os.path import abspath, join, dirname
 from tempfile import mkdtemp
 
 
