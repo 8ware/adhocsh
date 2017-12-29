@@ -4,7 +4,7 @@ from __future__ import print_function
 
 import sys
 import readline
-from os import environ, path, listdir, makedirs, getenv
+from os import environ, path, listdir, makedirs, getenv, system
 from subprocess import call, check_output, Popen, PIPE, CalledProcessError
 from optparse import OptionParser
 import shlex
@@ -185,6 +185,10 @@ if __name__ == '__main__':
     opts, args = parser.parse_args()
 
     command = args[0]
+    if system('which {} > /dev/null'.format(command)):
+        print ("Command not found: " + command)
+        sys.exit(1)
+
     completion = opts.completion if opts.completion else path.join(BASH_COMPLETION_DIR, command)
 
     shell = AdHocShell(command, completion, compfunc=opts.compfunc,
