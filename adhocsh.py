@@ -40,7 +40,7 @@ class AdHocShell(object):
         self.command = command
         self.completion = completion
         self.completion_funcname = compfunc if compfunc else '_' + command
-        self.default_subcommand = default
+        self.default_subcommand = default.split() if default else []
         self.history = HISTORY_PATH_TEMPLATE.format(cmd=command)
 
     def load_history(self):
@@ -191,7 +191,9 @@ if __name__ == '__main__':
 
     # Execute default command once at startup
     if opts.allow_default and opts.default:
-        call([ shell.command, shell.default_subcommand ])
+        default_command = [ shell.command ]
+        default_command.extend(shell.default_subcommand)
+        call(default_command)
 
     if opts.enable_history:
         shell.load_history()
@@ -204,7 +206,7 @@ if __name__ == '__main__':
             if not argc and not opts.allow_default:
                 continue
             if not argc and shell.default_subcommand:
-                args = [ shell.default_subcommand ]
+                args = shell.default_subcommand
             full_command = [ shell.command ]
             full_command.extend(args)
             call(full_command)
