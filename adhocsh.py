@@ -190,6 +190,9 @@ if __name__ == '__main__':
         sys.exit(1)
 
     completion = opts.completion if opts.completion else path.join(BASH_COMPLETION_DIR, command)
+    if not path.exists(completion):
+        print ("Completion file not found: " + completion)
+        sys.exit(1)
 
     shell = AdHocShell(command, completion, compfunc=opts.compfunc,
             default=opts.default, file_completion=opts.file_completion)
