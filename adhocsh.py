@@ -115,6 +115,14 @@ class AdHocShell(object):
         return match
 
     def get_comp_setup(self, line, bidx, eidx):
+        """
+        Parses the user input into currently provided arguments and the
+        cursor's position.
+
+        Currently quoted arguments and escaped characters are not correctly
+        interpreted in terms of indexes.
+        """
+
         words = line.split()
 
         offset = 0
