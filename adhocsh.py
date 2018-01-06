@@ -10,10 +10,11 @@ from optparse import OptionParser
 import shlex
 import re
 from termcolor import colored
+from xdg import XDG_DATA_HOME
 
 
-HISTORY_BASE_DIR = getenv('XDG_CONFIG_HOME') + '/' + 'adhocsh'
-HISTORY_PATH_TEMPLATE = HISTORY_BASE_DIR + '/{cmd:s}.history'
+HISTORY_BASE_DIR = path.join(XDG_DATA_HOME, 'adhocsh')
+HISTORY_PATH_TEMPLATE = path.join(HISTORY_BASE_DIR, '{cmd:s}.history')
 
 BASH_COMPLETION_DIR = '/usr/share/bash-completion/completions'
 
