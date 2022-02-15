@@ -18,3 +18,10 @@ git> push
 The default (sub)command can consist of multiple arguments which have to be
 enquoted. Alternatively, an alias can be used.
 
+
+Dependencies
+------------
+
+* Bash completion, e. g. `bash-completion` for Debian
+* Python packges: see `requirements.txt`
+
