@@ -101,6 +101,8 @@ class AdHocShell(object):
 
             self.matches = map (lambda m : m + ('/' if path.isdir(m) else ''), self.matches)
 
+            self.matches = list (self.matches)
+
             if not len (self.matches) and self.file_completion:
                 self.matches = self.get_file_completion(text)
 
