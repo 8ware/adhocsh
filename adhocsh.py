@@ -1,4 +1,4 @@
-#! /usr/bin/env python
+#! /usr/bin/env python3
 
 from __future__ import print_function
 
@@ -224,7 +224,7 @@ if __name__ == '__main__':
 
     while True:
         try:
-            line = raw_input (shell.get_prompt())
+            line = input (shell.get_prompt())
             args = shlex.split(line)
             argc = len (args)
             if not argc and not opts.allow_default:
