@@ -63,13 +63,13 @@ class AdHocShell(object):
             if self.command == 'git':
                 script = 'source "{}"; __git_ps1 "{}@%s"'.format(
                         "/usr/lib/git-core/git-sh-prompt", self.command)
-                prompt = check_output([ 'bash', '-c', script ])
+                prompt = check_output([ 'bash', '-c', script ], text = True)
 
             if self.command == 'task':
-                context = check_output([ 'task', '_get', 'rc.context' ])[:-1]
+                context = check_output([ 'task', '_get', 'rc.context' ], text = True)[:-1]
                 count = check_output([ 'task', 'rc.context:none',
                     'rc.verbose:nothing', 'count', 'status:pending',
-                    'or', 'status:waiting' ])[:-1]
+                    'or', 'status:waiting' ], text = True)[:-1]
                 info = '@' + context if context else ''
                 info += '#' + count
                 prompt = 'task{}'.format(info)
@@ -160,7 +160,7 @@ class AdHocShell(object):
                 command = self.command, quoted_args = '" "'.join(args),
                 cword = cword+1, completion_function = self.completion_funcname)
 
-        completion = Popen([ 'bash', '-c', script ], stdout=PIPE, stderr=PIPE)
+        completion = Popen([ 'bash', '-c', script ], stdout=PIPE, stderr=PIPE, text = True)
         stdout, stderr = completion.communicate()
 
         if stderr:
