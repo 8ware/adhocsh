@@ -1,4 +1,4 @@
-#! /usr/bin/env python
+#! /usr/bin/env python3
 
 from __future__ import print_function
 
@@ -63,13 +63,13 @@ class AdHocShell(object):
             if self.command == 'git':
                 script = 'source "{}"; __git_ps1 "{}@%s"'.format(
                         "/usr/lib/git-core/git-sh-prompt", self.command)
-                prompt = check_output([ 'bash', '-c', script ])
+                prompt = check_output([ 'bash', '-c', script ], text = True)
 
             if self.command == 'task':
-                context = check_output([ 'task', '_get', 'rc.context' ])[:-1]
+                context = check_output([ 'task', '_get', 'rc.context' ], text = True)[:-1]
                 count = check_output([ 'task', 'rc.context:none',
                     'rc.verbose:nothing', 'count', 'status:pending',
-                    'or', 'status:waiting' ])[:-1]
+                    'or', 'status:waiting' ], text = True)[:-1]
                 info = '@' + context if context else ''
                 info += '#' + count
                 prompt = 'task{}'.format(info)
@@ -100,6 +100,8 @@ class AdHocShell(object):
             self.matches = filter (lambda m : m.startswith(text), self.matches)
 
             self.matches = map (lambda m : m + ('/' if path.isdir(m) else ''), self.matches)
+
+            self.matches = list (self.matches)
 
             if not len (self.matches) and self.file_completion:
                 self.matches = self.get_file_completion(text)
@@ -160,7 +162,7 @@ class AdHocShell(object):
                 command = self.command, quoted_args = '" "'.join(args),
                 cword = cword+1, completion_function = self.completion_funcname)
 
-        completion = Popen([ 'bash', '-c', script ], stdout=PIPE, stderr=PIPE)
+        completion = Popen([ 'bash', '-c', script ], stdout=PIPE, stderr=PIPE, text = True)
         stdout, stderr = completion.communicate()
 
         if stderr:
@@ -224,7 +226,7 @@ if __name__ == '__main__':
 
     while True:
         try:
-            line = raw_input (shell.get_prompt())
+            line = input (shell.get_prompt())
             args = shlex.split(line)
             argc = len (args)
             if not argc and not opts.allow_default:
