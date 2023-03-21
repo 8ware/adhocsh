@@ -43,7 +43,7 @@ class CommandLineParserTest(unittest.TestCase):
     def testEscaped(self):
         self.skipTest("Not implemented, yet")
         #                             012345678901234567890123456789012
-        setup = shell.get_comp_setup('add s\ p\ a\ c\ e\ s.pdf doc/Comp', 25, 33)
+        setup = shell.get_comp_setup('add s\\ p\\ a\\ c\\ e\\ s.pdf doc/Comp', 25, 33)
         self.assertEqual(setup, (['add', 's p a c e s.pdf', 'doc/Comp'], 2))
 
     def testQuotedOpen(self):
